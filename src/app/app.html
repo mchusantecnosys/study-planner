@@ -1,0 +1,263 @@
+<div class="min-h-screen bg-[var(--color-paper)] text-[var(--color-ink)] font-body flex flex-col selection:bg-[var(--color-signal)] selection:text-[var(--color-paper)]">
+  <!-- Top Navigation & Brand Header -->
+  <header class="border-b border-[var(--color-line)] py-5">
+    <div class="max-w-[68rem] mx-auto px-5">
+      <div class="flex items-center justify-between gap-4">
+        <!-- Logotipo y Nombre en Fraunces headline (1.25rem, 700) -->
+        <div class="flex items-baseline gap-3">
+          <span class="font-display text-[1.25rem] font-bold text-[var(--color-ink)] tracking-tight">
+            StudyPlanner
+          </span>
+          <span class="text-[0.8125rem] text-[var(--color-ink-muted)] hidden sm:inline">
+            El cuaderno de la tarde
+          </span>
+        </div>
+
+        <!-- Quiet Actions on Top Right -->
+        <div class="flex items-center gap-3">
+          @if (currentUser(); as user) {
+            <!-- Local-First & Cloud Sync Indicator -->
+            <div class="hidden sm:flex items-center gap-1.5 text-[0.75rem] text-[var(--color-ink-muted)]">
+              <span
+                class="w-2 h-2 rounded-full transition-colors"
+                [class.bg-[var(--color-success)]]="syncState() === 'synced'"
+                [class.bg-[var(--color-signal)]]="syncState() === 'syncing'"
+                [class.bg-[var(--color-line)]]="syncState() === 'offline' || syncState() === 'connecting'"
+                aria-hidden="true"
+              ></span>
+              <span>
+                {{ syncState() === 'synced' ? 'Local-First + Nube activa' : syncState() === 'syncing' ? 'Sincronizando' : 'Dexie local (sin conexión)' }}
+              </span>
+            </div>
+
+            <!-- User avatar / name -->
+            <div class="hidden md:flex items-center gap-2 pl-2 border-l border-[var(--color-line)] text-[0.8125rem] text-[var(--color-ink)]">
+              @if (user.photoURL) {
+                <img
+                  [src]="user.photoURL"
+                  alt=""
+                  class="w-6 h-6 rounded-full border border-[var(--color-line)] object-cover"
+                  referrerpolicy="no-referrer"
+                />
+              }
+              <span class="font-medium max-w-[120px] truncate">{{ user.displayName || user.email }}</span>
+            </div>
+
+            <button
+              type="button"
+              (click)="triggerBackup()"
+              class="text-[0.8125rem] font-medium text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] underline cursor-pointer hidden lg:inline"
+              title="Forzar respaldo en Cloud Firestore"
+            >
+              Respaldar
+            </button>
+
+            <button
+              type="button"
+              (click)="exportCalendar()"
+              class="text-[0.8125rem] font-medium text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] underline cursor-pointer hidden sm:inline"
+              title="Exportar a Google o Apple Calendar"
+            >
+              Exportar .ICS
+            </button>
+
+            <button
+              type="button"
+              (click)="openNewTaskModal()"
+              class="h-[38px] px-3.5 rounded-[8px] bg-[var(--color-ink)] text-[var(--color-paper)] text-[0.8125rem] font-medium transition-opacity hover:opacity-85 cursor-pointer"
+            >
+              + Nueva actividad
+            </button>
+
+            <button
+              type="button"
+              (click)="signOutAccount()"
+              class="p-2 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] rounded-[6px] transition-colors cursor-pointer"
+              title="Cerrar sesión"
+              aria-label="Cerrar sesión"
+            >
+              <mat-icon class="!w-5 !h-5 !text-[20px]">logout</mat-icon>
+            </button>
+          } @else {
+            <button
+              type="button"
+              (click)="signInGoogle()"
+              class="h-[38px] px-4 rounded-[8px] bg-[var(--color-ink)] text-[var(--color-paper)] text-[0.8125rem] font-medium transition-opacity hover:opacity-85 cursor-pointer"
+            >
+              Entrar con Google
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Router: Loading vs Gate vs Workspace -->
+  @if (isAuthLoading()) {
+    <div class="flex-1 flex items-center justify-center py-24 text-[var(--color-ink-muted)] text-[0.875rem]">
+      <span class="animate-pulse">Abriendo tu cuaderno...</span>
+    </div>
+  } @else if (!currentUser()) {
+    <!-- Auth Gate Screen (Login / Register required to access personal notebook) -->
+    <app-auth-gate></app-auth-gate>
+  } @else {
+    <!-- Editorial Main Container: Max 68rem (1088px), 20px padding -->
+    <main class="flex-1 max-w-[68rem] w-full mx-auto px-5 py-8 sm:py-12">
+      <!-- Date & Lead Section: Display in Fraunces -->
+      <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[var(--color-line)]">
+          <div>
+            <span class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-signal)] mb-1">
+              Jornada de Estudio
+            </span>
+            <!-- Display typography: Fraunces clamp(2rem, 4.5vw, 3.25rem) 700 -->
+            <h1 class="font-display text-[clamp(2rem,4.5vw,3.25rem)] font-bold leading-[1.05] tracking-[-0.025em] text-[var(--color-ink)] capitalize">
+              {{ todayFormatted() }}
+            </h1>
+            <p class="text-[1rem] text-[var(--color-ink-muted)] mt-2 max-w-[46ch] leading-[1.5]">
+              Un espacio de calma para responder a una sola pregunta: ¿qué preparo ahora?
+            </p>
+          </div>
+
+          <!-- View Toggle Control (Exactly 3 options: Lista, Semana, Mes) -->
+          <nav
+            class="flex items-center p-1 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-[8px] self-start md:self-end shrink-0 w-full sm:w-auto"
+            aria-label="Vistas del planificador"
+          >
+            <button
+              type="button"
+              (click)="setView('list')"
+              class="flex-1 sm:flex-initial h-[36px] sm:h-[40px] px-4 rounded-[6px] text-[0.875rem] font-medium transition-colors cursor-pointer text-center"
+              [class.bg-[var(--color-ink)]]="currentView() === 'list'"
+              [class.text-[var(--color-paper)]]="currentView() === 'list'"
+              [class.text-[var(--color-ink-muted)]]="currentView() !== 'list'"
+              [attr.aria-pressed]="currentView() === 'list'"
+            >
+              Lista
+            </button>
+            <button
+              type="button"
+              (click)="setView('week')"
+              class="flex-1 sm:flex-initial h-[36px] sm:h-[40px] px-4 rounded-[6px] text-[0.875rem] font-medium transition-colors cursor-pointer text-center"
+              [class.bg-[var(--color-ink)]]="currentView() === 'week'"
+              [class.text-[var(--color-paper)]]="currentView() === 'week'"
+              [class.text-[var(--color-ink-muted)]]="currentView() !== 'week'"
+              [attr.aria-pressed]="currentView() === 'week'"
+            >
+              Semana
+            </button>
+            <button
+              type="button"
+              (click)="setView('month')"
+              class="flex-1 sm:flex-initial h-[36px] sm:h-[40px] px-4 rounded-[6px] text-[0.875rem] font-medium transition-colors cursor-pointer text-center"
+              [class.bg-[var(--color-ink)]]="currentView() === 'month'"
+              [class.text-[var(--color-paper)]]="currentView() === 'month'"
+              [class.text-[var(--color-ink-muted)]]="currentView() !== 'month'"
+              [attr.aria-pressed]="currentView() === 'month'"
+            >
+              Mes
+            </button>
+          </nav>
+        </div>
+
+        <!-- Mobile Course Chips Bar (Horizontal scrolling on small screens <=860px) -->
+        <div class="flex lg:hidden items-center gap-2 overflow-x-auto py-3 no-scrollbar">
+          @for (course of courses(); track course) {
+            <button
+              type="button"
+              (click)="toggleCourse(course)"
+              class="flex items-center gap-2 px-3.5 py-1.5 rounded-[999px] border border-[var(--color-line)] text-[0.8125rem] font-medium shrink-0 transition-colors cursor-pointer"
+              [class.bg-[var(--color-ink)]]="filter().course.toLowerCase() === course.toLowerCase()"
+              [class.text-[var(--color-paper)]]="filter().course.toLowerCase() === course.toLowerCase()"
+              [class.bg-[var(--color-surface)]]="filter().course.toLowerCase() !== course.toLowerCase()"
+              [class.text-[var(--color-ink)]]="filter().course.toLowerCase() !== course.toLowerCase()"
+            >
+              <span
+                class="w-2 h-2 rounded-full shrink-0"
+                [style.backgroundColor]="getCourseDot(course)"
+                aria-hidden="true"
+              ></span>
+              <span>{{ course }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Editorial 2-Column Grid: minmax(0, 1fr) + 19rem, 56px gap on desktop (>860px) -->
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_19rem] gap-14 items-start">
+        <!-- Left Column: Primary Working Surface -->
+        <section class="min-w-0 pb-20 sm:pb-8">
+          @if (currentView() === 'list') {
+            <app-task-list (addTask)="openNewTaskModal()" (editTask)="openEditTaskModal($event)"></app-task-list>
+          } @else {
+            <app-calendar-view (addTask)="openNewTaskModal($event)" (editTask)="openEditTaskModal($event)"></app-calendar-view>
+          }
+        </section>
+
+        <!-- Right Column: Sticky Sidebar on Desktop (hidden on mobile, per DESIGN.md) -->
+        <div class="hidden lg:block">
+          <app-editorial-sidebar></app-editorial-sidebar>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Floating Thumb-Zone Quick Add Bar (The Thumb-Zone Rule) -->
+    <div
+      class="lg:hidden fixed bottom-4 left-4 right-4 z-40 p-2 bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[10px]"
+      style="box-shadow: 0 8px 24px rgba(28,26,23,0.18), 0 1px 3px rgba(28,26,23,0.12);"
+    >
+      <app-quick-add></app-quick-add>
+    </div>
+  }
+
+  <!-- Editorial Footer -->
+  <footer class="border-t border-[var(--color-line)] py-6 mt-auto text-[0.8125rem] text-[var(--color-ink-muted)]">
+    <div class="max-w-[68rem] mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        <span class="font-medium text-[var(--color-ink)]">StudyPlanner</span>
+        <span aria-hidden="true"> · </span>
+        <span>Local-First (Dexie IndexedDB)</span>
+        <span aria-hidden="true"> · </span>
+        <span>Réplica en Cloud Firestore</span>
+      </div>
+
+      <div class="flex items-center gap-4 flex-wrap">
+        @if (currentUser()) {
+          <button
+            type="button"
+            (click)="resetData()"
+            class="hover:text-[var(--color-ink)] underline cursor-pointer"
+          >
+            Restaurar ejemplos
+          </button>
+          <button
+            type="button"
+            (click)="signOutAccount()"
+            class="hover:text-[var(--color-ink)] underline cursor-pointer"
+          >
+            Cerrar sesión
+          </button>
+        }
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal Dialog Window (Only for detailed editing/creation) -->
+  @if (isModalOpen()) {
+    <app-task-modal
+      [taskToEdit]="taskToEdit()"
+      [initialDate]="modalPresetDate()"
+      (closeModal)="closeModal()"
+      (saved)="onTaskSaved($event)"
+    ></app-task-modal>
+  }
+
+  <!-- Toast Notification (Minimal editorial style) -->
+  @if (toastMessage(); as msg) {
+    <div
+      class="fixed bottom-6 right-6 z-50 bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2.5 rounded-[8px] text-[0.8125rem] font-medium shadow-md transition-all"
+    >
+      {{ msg }}
+    </div>
+  }
+</div>

@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidTask(data) {
+      return data.keys().hasAll(['id', 'userId', 'title', 'course', 'type', 'dueDate', 'completed', 'priority', 'createdAt'])
+        && data.id is string && data.id.size() > 0 && data.id.size() <= 100
+        && data.userId is string && data.userId == request.auth.uid
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 200
+        && data.course is string && data.course.size() >= 1 && data.course.size() <= 100
+        && (data.type == 'assignment' || data.type == 'exam')
+        && data.dueDate is string && data.dueDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.completed is bool
+        && (data.priority == 'low' || data.priority == 'medium' || data.priority == 'high')
+        && data.createdAt is string
+        && (!('time' in data) || (data.time is string && data.time.size() <= 5))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 2000))
+        && (!('completedAt' in data) || data.completedAt is string || data.completedAt == null)
+        && (!('estimatedHours' in data) || data.estimatedHours is number || data.estimatedHours == null);
+    }
+
+    match /tasks/{taskId} {
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidTask(request.resource.data);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidTask(request.resource.data);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Default deny for unmatched documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

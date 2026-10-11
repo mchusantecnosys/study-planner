@@ -1,0 +1,6 @@
+{
+  "name": "StudyPlanner - Gestor Académico y Calendario de Tareas",
+  "description": "Planificador de estudios y tareas para estudiantes con vista de calendario, deberes, exámenes y control de entregas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

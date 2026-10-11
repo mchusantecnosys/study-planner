@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "Task": {
+      "title": "Task",
+      "description": "Academic assignment or exam belonging to a student",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the task"
+        },
+        "userId": {
+          "type": "string",
+          "description": "User ID of the task owner"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the academic assignment or exam",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "course": {
+          "type": "string",
+          "description": "Course or subject name",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "type": {
+          "type": "string",
+          "description": "Strict task type: assignment or exam",
+          "enum": ["assignment", "exam"]
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Pure ISO date string YYYY-MM-DD",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "time": {
+          "type": "string",
+          "description": "Optional deadline time HH:mm",
+          "maxLength": 5
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Whether the task has been marked as completed"
+        },
+        "completedAt": {
+          "type": "string",
+          "description": "ISO timestamp when the task was completed"
+        },
+        "priority": {
+          "type": "string",
+          "description": "Priority level",
+          "enum": ["low", "medium", "high"]
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional study notes or instructions",
+          "maxLength": 2000
+        },
+        "estimatedHours": {
+          "type": "number",
+          "description": "Estimated hours of study or dedication"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation"
+        }
+      },
+      "required": ["id", "userId", "title", "course", "type", "dueDate", "completed", "priority", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/tasks/{taskId}": {
+      "schema": {
+        "$ref": "Task"
+      },
+      "description": "Collection of academic tasks and exams partitioned by student userId"
+    }
+  }
+}

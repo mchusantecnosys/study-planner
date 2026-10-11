@@ -1,0 +1,108 @@
+/* Global styles and Tailwind setup */
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import "tailwindcss";
+
+:root {
+  --color-paper: #f6f1e7;
+  --color-surface: #fffdf8;
+  --color-ink: #1c1a17;
+  --color-ink-muted: #5b564c;
+  --color-line: #ddd5c4;
+  --color-signal: #b9321a;
+  --color-signal-wash: #f7e1da;
+  --color-success: #2f6b4a;
+
+  --course-blue: #2d5fa8;
+  --course-ochre-rust: #b4561b;
+  --course-violet: #6a3fa0;
+  --course-teal: #1f7a6d;
+  --course-gold: #8a6a00;
+
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Hanken Grotesk", system-ui, -apple-system, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #17150f;
+    --color-surface: #201d15;
+    --color-ink: #f1ebdd;
+    --color-ink-muted: #b4ad9c;
+    --color-line: #38341f;
+    --color-signal: #ff7a5c;
+    --color-signal-wash: #3a1f18;
+    --color-success: #6fcf9a;
+
+    --course-blue: #7fb0f2;
+    --course-ochre-rust: #f0955a;
+    --course-violet: #b995ea;
+    --course-teal: #5cd0bf;
+    --course-gold: #e0bf4a;
+  }
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  caret-color: var(--color-signal);
+  font-variant-numeric: tabular-nums;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+::selection {
+  background-color: var(--color-signal);
+  color: var(--color-paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 3px;
+}
+
+/* Material Icon font support */
+.material-icons,
+mat-icon {
+  font-family: 'Material Icons', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'liga';
+}
+
+/* Serif Display helper */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-muted);
+}
