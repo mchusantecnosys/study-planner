@@ -24,6 +24,21 @@ const MONTH_NAMES_ES = [
   'Diciembre',
 ];
 
+const MONTH_NAMES_EN = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
 const MONTH_SHORT_ES = [
   'Ene',
   'Feb',
@@ -39,6 +54,21 @@ const MONTH_SHORT_ES = [
   'Dic',
 ];
 
+const MONTH_SHORT_EN = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
 const DAY_NAMES_ES = [
   'Domingo',
   'Lunes',
@@ -49,7 +79,18 @@ const DAY_NAMES_ES = [
   'Sábado',
 ];
 
+const DAY_NAMES_EN = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+
 export const DAY_NAMES_SHORT_ES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+export const DAY_NAMES_SHORT_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 /**
  * Returns today's local date as "YYYY-MM-DD".
@@ -148,30 +189,55 @@ export function diffInDays(a: string, b: string): number {
 }
 
 /**
- * Returns a human-friendly Spanish relative label (e.g., "Hoy", "Mañana", "En 3 días", "Atrasado").
+ * Returns a human-friendly relative label (e.g., "Hoy"/"Today", "Mañana"/"Tomorrow", "En 3 días"/"In 3 days", "Atrasado"/"Overdue").
  */
-export function getRelativeDateLabel(dateStr: string): string {
+export function getRelativeDateLabel(dateStr: string, lang: 'es' | 'en' = 'es'): string {
   const today = getTodayISO();
   const diff = diffInDays(today, dateStr);
+
+  if (lang === 'en') {
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Tomorrow';
+    if (diff === -1) return 'Yesterday';
+    if (diff < -1) return `Overdue (${Math.abs(diff)}d)`;
+    if (diff <= 7) return `In ${diff} days`;
+    return formatDisplayDate(dateStr, { shortMonth: true }, 'en');
+  }
 
   if (diff === 0) return 'Hoy';
   if (diff === 1) return 'Mañana';
   if (diff === -1) return 'Ayer';
   if (diff < -1) return `Atrasado (${Math.abs(diff)}d)`;
   if (diff <= 7) return `En ${diff} días`;
-  return formatDisplayDate(dateStr, { shortMonth: true });
+  return formatDisplayDate(dateStr, { shortMonth: true }, 'es');
 }
 
 /**
- * Formats a "YYYY-MM-DD" string into Spanish display text.
+ * Formats a "YYYY-MM-DD" string into localized display text.
  */
 export function formatDisplayDate(
   dateStr: string,
-  options?: { includeDayName?: boolean; shortMonth?: boolean; includeYear?: boolean }
+  options?: { includeDayName?: boolean; shortMonth?: boolean; includeYear?: boolean },
+  lang: 'es' | 'en' = 'es'
 ): string {
   if (!dateStr) return '';
   const { year, month, day } = parseDateParts(dateStr);
   const dayOfWeek = getDayOfWeek(year, month, day);
+
+  if (lang === 'en') {
+    const monthLabel = options?.shortMonth
+      ? MONTH_SHORT_EN[month - 1]
+      : MONTH_NAMES_EN[month - 1];
+
+    let result = `${monthLabel} ${day}`;
+    if (options?.includeYear !== false) {
+      result += `, ${year}`;
+    }
+    if (options?.includeDayName) {
+      result = `${DAY_NAMES_EN[dayOfWeek]}, ${result}`;
+    }
+    return result;
+  }
 
   const monthLabel = options?.shortMonth
     ? MONTH_SHORT_ES[month - 1]
@@ -191,16 +257,30 @@ export function formatDisplayDate(
 }
 
 /**
- * Returns month name in Spanish for a given month index (1-12).
+ * Returns month name for a given month index (1-12).
  */
-export function getMonthName(month: number): string {
+export function getMonthName(month: number, lang: 'es' | 'en' = 'es'): string {
+  if (lang === 'en') {
+    return MONTH_NAMES_EN[month - 1] || '';
+  }
   return MONTH_NAMES_ES[month - 1] || '';
 }
 
 /**
  * Returns weekday names starting with Monday (for European/Academic calendar layout).
  */
-export function getAcademicWeekdays(): { name: string; short: string }[] {
+export function getAcademicWeekdays(lang: 'es' | 'en' = 'es'): { name: string; short: string }[] {
+  if (lang === 'en') {
+    return [
+      { name: 'Monday', short: 'Mon' },
+      { name: 'Tuesday', short: 'Tue' },
+      { name: 'Wednesday', short: 'Wed' },
+      { name: 'Thursday', short: 'Thu' },
+      { name: 'Friday', short: 'Fri' },
+      { name: 'Saturday', short: 'Sat' },
+      { name: 'Sunday', short: 'Sun' },
+    ];
+  }
   return [
     { name: 'Lunes', short: 'Lun' },
     { name: 'Martes', short: 'Mar' },

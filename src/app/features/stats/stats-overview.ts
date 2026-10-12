@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { TaskService } from '../../core/services/task.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 @Component({
   selector: 'app-stats-overview',
@@ -16,7 +17,7 @@ import { TaskService } from '../../core/services/task.service';
       >
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold uppercase tracking-wider text-amber-800">
-            Exámenes
+            {{ t().stats.examsTitle }}
           </span>
           <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
             <mat-icon class="!w-4 !h-4 !text-[18px]">school</mat-icon>
@@ -28,18 +29,18 @@ import { TaskService } from '../../core/services/task.service';
           </span>
           @if (stats().upcomingExams7Days > 0) {
             <span class="text-xs font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md">
-              {{ stats().upcomingExams7Days }} en 7d
+              {{ stats().upcomingExams7Days }} {{ t().stats.in7Days }}
             </span>
           }
         </div>
-        <p class="text-xs text-stone-500 mt-1">Evaluaciones programadas</p>
+        <p class="text-xs text-stone-500 mt-1">{{ t().stats.examsDesc }}</p>
       </div>
 
       <!-- Deberes Pendientes -->
       <div class="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-xs">
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold uppercase tracking-wider text-indigo-800">
-            Deberes
+            {{ t().stats.assignmentsTitle }}
           </span>
           <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center">
             <mat-icon class="!w-4 !h-4 !text-[18px]">assignment</mat-icon>
@@ -51,18 +52,18 @@ import { TaskService } from '../../core/services/task.service';
           </span>
           @if (stats().upcomingAssignments7Days > 0) {
             <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded-md">
-              {{ stats().upcomingAssignments7Days }} en 7d
+              {{ stats().upcomingAssignments7Days }} {{ t().stats.in7Days }}
             </span>
           }
         </div>
-        <p class="text-xs text-stone-500 mt-1">Trabajos y talleres</p>
+        <p class="text-xs text-stone-500 mt-1">{{ t().stats.assignmentsDesc }}</p>
       </div>
 
       <!-- Pendientes vs Atrasadas -->
       <div class="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-xs">
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold uppercase tracking-wider text-stone-600">
-            Por Entregar
+            {{ t().stats.dueTitle }}
           </span>
           <div
             class="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -79,12 +80,12 @@ import { TaskService } from '../../core/services/task.service';
           </span>
           @if (stats().overdue > 0) {
             <span class="text-xs font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-md">
-              {{ stats().overdue }} tarde
+              {{ stats().overdue }} {{ t().stats.late }}
             </span>
           }
         </div>
         <p class="text-xs text-stone-500 mt-1">
-          {{ stats().overdue > 0 ? 'Atención a vencidas' : 'Todo al día' }}
+          {{ stats().overdue > 0 ? t().stats.dueDescOverdue : t().stats.dueDescAllGood }}
         </p>
       </div>
 
@@ -92,7 +93,7 @@ import { TaskService } from '../../core/services/task.service';
       <div class="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-xs">
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold uppercase tracking-wider text-emerald-800">
-            Completadas
+            {{ t().stats.completedTitle }}
           </span>
           <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
             <mat-icon class="!w-4 !h-4 !text-[18px]">task_alt</mat-icon>
@@ -119,5 +120,8 @@ import { TaskService } from '../../core/services/task.service';
 })
 export class StatsOverview {
   private taskService = inject(TaskService);
+  private i18n = inject(I18nService);
+
+  readonly t = this.i18n.t;
   readonly stats = this.taskService.stats;
 }

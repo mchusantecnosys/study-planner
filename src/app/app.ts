@@ -2,18 +2,23 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Task } from './core/models/task.model';
 import { TaskService } from './core/services/task.service';
+import { I18nService } from './core/services/i18n.service';
+import { TourService } from './core/services/tour.service';
+import { Language } from './core/i18n/translations';
 import { AuthGate } from './features/auth/auth-gate';
 import { CalendarView } from './features/calendar/calendar-view';
 import { EditorialSidebar } from './features/sidebar/editorial-sidebar';
 import { QuickAdd } from './features/tasks/quick-add';
 import { TaskList } from './features/tasks/task-list';
 import { TaskModal } from './features/tasks/task-modal';
+import { UserTour } from './features/tour/user-tour';
 import { formatDisplayDate, getTodayISO } from './lib/dates';
 
 @Component({
@@ -27,12 +32,18 @@ import { formatDisplayDate, getTodayISO } from './lib/dates';
     TaskList,
     QuickAdd,
     TaskModal,
+    UserTour,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App {
   private taskService = inject(TaskService);
+  private i18n = inject(I18nService);
+  readonly tourService = inject(TourService);
+
+  readonly t = this.i18n.t;
+  readonly currentLang = this.i18n.currentLang;
 
   readonly currentView = this.taskService.currentView;
   readonly courses = this.taskService.uniqueCourses;
@@ -48,22 +59,40 @@ export class App {
 
   readonly todayFormatted = computed(() => {
     const today = getTodayISO();
-    return formatDisplayDate(today, { includeDayName: true });
+    return formatDisplayDate(today, { includeDayName: true }, this.i18n.currentLang());
   });
+
+  constructor() {
+    effect(() => {
+      const user = this.currentUser();
+      const loading = this.isAuthLoading();
+      if (user && !loading) {
+        this.tourService.initAutoTour();
+      }
+    });
+  }
+
+  startTour(): void {
+    this.tourService.resetAndRestart();
+  }
+
+  setLanguage(lang: Language): void {
+    this.i18n.setLanguage(lang);
+  }
 
   async triggerBackup(): Promise<void> {
     await this.taskService.backupAllTasksToCloud();
-    this.showToast('Copia de respaldo sincronizada con Firebase');
+    this.showToast(this.t().toasts.backupSynced);
   }
 
   async signInGoogle(): Promise<void> {
     await this.taskService.firebaseService.signInWithGoogle();
-    this.showToast('Sesión iniciada con Google en Firebase');
+    this.showToast(this.t().toasts.googleSignedIn);
   }
 
   async signOutAccount(): Promise<void> {
     await this.taskService.firebaseService.signOutUser();
-    this.showToast('Sesión de Google cerrada');
+    this.showToast(this.t().toasts.googleSignedOut);
   }
 
   setView(view: 'list' | 'week' | 'month'): void {
@@ -102,18 +131,18 @@ export class App {
   }
 
   onTaskSaved(task: Task): void {
-    this.showToast(`Guardado: ${task.title}`);
+    this.showToast(`${this.t().toasts.taskSaved}: ${task.title}`);
   }
 
   exportCalendar(): void {
     this.taskService.exportToICS();
-    this.showToast('Calendario académico exportado (.ICS)');
+    this.showToast(this.t().toasts.calendarExported);
   }
 
   async resetData(): Promise<void> {
-    if (confirm('¿Restaurar los apuntes y tareas de ejemplo?')) {
+    if (confirm(this.t().footer.confirmRestore)) {
       await this.taskService.resetToSampleData();
-      this.showToast('Datos de ejemplo restaurados');
+      this.showToast(this.t().toasts.samplesRestored);
     }
   }
 

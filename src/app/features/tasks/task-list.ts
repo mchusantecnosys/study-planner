@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { Task } from '../../core/models/task.model';
 import { TaskService } from '../../core/services/task.service';
+import { I18nService } from '../../core/services/i18n.service';
 import {
   diffInDays,
   getTodayISO,
@@ -31,7 +32,7 @@ import { TaskRow } from './task-row';
           <section class="mt-8 first:mt-2">
             <div class="flex items-center justify-between mb-2">
               <h2 class="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-signal)]">
-                Atrasadas
+                {{ t().taskList.overdue }}
               </h2>
               <span class="text-[0.8125rem] font-semibold text-[var(--color-signal)] tabular-nums">
                 {{ overdueTasks().length }}
@@ -49,7 +50,7 @@ import { TaskRow } from './task-row';
         <section class="mt-10 first:mt-2">
           <div class="flex items-center justify-between mb-2">
             <h2 class="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink)]">
-              Hoy
+              {{ t().taskList.today }}
             </h2>
             <span class="text-[0.8125rem] text-[var(--color-ink-muted)] tabular-nums">
               {{ todayTasks().length }}
@@ -60,7 +61,7 @@ import { TaskRow } from './task-row';
               <app-task-row [task]="task" (edit)="editTask.emit($event)"></app-task-row>
             } @empty {
               <div class="py-5 text-[0.875rem] text-[var(--color-ink-muted)] border-b border-[var(--color-line)]">
-                Sin tareas pendientes para hoy. Puedes capturar una arriba.
+                {{ t().taskList.emptyToday }}
               </div>
             }
           </div>
@@ -71,7 +72,7 @@ import { TaskRow } from './task-row';
           <section class="mt-10">
             <div class="flex items-center justify-between mb-2">
               <h2 class="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
-                Esta Semana
+                {{ t().taskList.thisWeek }}
               </h2>
               <span class="text-[0.8125rem] text-[var(--color-ink-muted)] tabular-nums">
                 {{ thisWeekTasks().length }}
@@ -90,7 +91,7 @@ import { TaskRow } from './task-row';
           <section class="mt-10">
             <div class="flex items-center justify-between mb-2">
               <h2 class="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
-                Más Adelante
+                {{ t().taskList.later }}
               </h2>
               <span class="text-[0.8125rem] text-[var(--color-ink-muted)] tabular-nums">
                 {{ laterTasks().length }}
@@ -109,7 +110,7 @@ import { TaskRow } from './task-row';
           <section class="mt-10">
             <div class="flex items-center justify-between mb-2">
               <h2 class="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
-                Completadas
+                {{ t().taskList.completed }}
               </h2>
               <span class="text-[0.8125rem] text-[var(--color-ink-muted)] tabular-nums">
                 {{ completedTasks().length }}
@@ -128,7 +129,9 @@ import { TaskRow } from './task-row';
 })
 export class TaskList {
   private taskService = inject(TaskService);
+  private i18n = inject(I18nService);
 
+  readonly t = this.i18n.t;
   readonly addTask = output<void>();
   readonly editTask = output<Task>();
 

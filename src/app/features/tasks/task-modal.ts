@@ -16,6 +16,7 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { Task, TaskCreateInput, TaskPriority, TaskType } from '../../core/models/task.model';
 import { TaskService } from '../../core/services/task.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { addDays, getTodayISO } from '../../lib/dates';
 
 @Component({
@@ -29,14 +30,14 @@ import { addDays, getTodayISO } from '../../lib/dates';
       tabindex="-1"
       role="dialog"
       aria-modal="true"
-      [attr.aria-label]="isEditMode() ? 'Editar tarea' : 'Crear nueva tarea'"
+      [attr.aria-label]="isEditMode() ? t().taskModal.editTitle : t().taskModal.createTitle"
     >
       <!-- Backdrop button -->
       <button
         type="button"
         (click)="closeModal.emit()"
         class="fixed inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity cursor-pointer border-none"
-        aria-label="Cerrar modal"
+        [attr.aria-label]="t().taskModal.closeAria"
       ></button>
 
       <!-- Modal Dialog Window -->
@@ -47,17 +48,17 @@ import { addDays, getTodayISO } from '../../lib/dates';
         <div class="px-6 py-5 border-b border-[var(--color-line)] flex items-center justify-between">
           <div>
             <h2 class="font-display text-[1.25rem] font-bold text-[var(--color-ink)] leading-snug">
-              {{ isEditMode() ? 'Editar Actividad' : 'Nueva Tarea o Examen' }}
+              {{ isEditMode() ? t().taskModal.editTitle : t().taskModal.createTitle }}
             </h2>
             <p class="text-[0.8125rem] text-[var(--color-ink-muted)] mt-0.5">
-              Planificación académica en fecha pura sin desfase horario
+              {{ t().taskModal.subtitle }}
             </p>
           </div>
           <button
             type="button"
             (click)="closeModal.emit()"
             class="p-2 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] rounded-[6px] transition-colors cursor-pointer"
-            aria-label="Cerrar modal"
+            [attr.aria-label]="t().taskModal.closeAria"
           >
             <mat-icon class="!w-5 !h-5 !text-[20px]">close</mat-icon>
           </button>
@@ -68,7 +69,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
           <!-- Type Selector (Segmented buttons) -->
           <div>
             <span class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)] mb-2">
-              Tipo de Actividad <span class="text-[var(--color-signal)]">*</span>
+              {{ t().taskModal.typeLabel }} <span class="text-[var(--color-signal)]">*</span>
             </span>
             <div class="grid grid-cols-2 gap-2 p-1 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-[8px]">
               <button
@@ -79,7 +80,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
                 [class.text-[var(--color-paper)]]="taskForm.controls.type.value === 'assignment'"
                 [class.text-[var(--color-ink-muted)]]="taskForm.controls.type.value !== 'assignment'"
               >
-                <span>Deber / Trabajo</span>
+                <span>{{ t().taskModal.typeAssignment }}</span>
               </button>
               <button
                 type="button"
@@ -90,7 +91,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
                 [class.font-semibold]="taskForm.controls.type.value === 'exam'"
                 [class.text-[var(--color-ink-muted)]]="taskForm.controls.type.value !== 'exam'"
               >
-                <span>Examen / Evaluación</span>
+                <span>{{ t().taskModal.typeExam }}</span>
               </button>
             </div>
           </div>
@@ -98,17 +99,17 @@ import { addDays, getTodayISO } from '../../lib/dates';
           <!-- Title -->
           <div>
             <label class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)] mb-1.5" for="title">
-              Título de la actividad <span class="text-[var(--color-signal)]">*</span>
+              {{ t().taskModal.titleLabel }} <span class="text-[var(--color-signal)]">*</span>
             </label>
             <input
               id="title"
               type="text"
               formControlName="title"
-              placeholder="Ej: Examen Parcial de Álgebra Lineal"
+              [placeholder]="t().taskModal.titlePlaceholder"
               class="w-full px-3.5 py-2.5 rounded-[8px] border border-[var(--color-line)] bg-[var(--color-paper)] text-[0.9375rem] text-[var(--color-ink)] placeholder-[var(--color-ink-muted)] focus:outline-none focus:border-[var(--color-ink)] transition-colors"
             />
             @if (taskForm.controls.title.touched && taskForm.controls.title.invalid) {
-              <p class="text-[0.8125rem] text-[var(--color-signal)] mt-1">El título es obligatorio (mínimo 3 caracteres).</p>
+              <p class="text-[0.8125rem] text-[var(--color-signal)] mt-1">{{ t().taskModal.titleError }}</p>
             }
           </div>
 
@@ -117,7 +118,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
             <!-- Course / Subject -->
             <div>
               <label class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)] mb-1.5" for="course">
-                Materia <span class="text-[var(--color-signal)]">*</span>
+                {{ t().taskModal.courseLabel }} <span class="text-[var(--color-signal)]">*</span>
               </label>
               <div class="relative">
                 <input
@@ -125,7 +126,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
                   type="text"
                   formControlName="course"
                   list="course-suggestions"
-                  placeholder="Ej: Cálculo II"
+                  [placeholder]="t().taskModal.coursePlaceholder"
                   class="w-full px-3.5 py-2.5 rounded-[8px] border border-[var(--color-line)] bg-[var(--color-paper)] text-[0.9375rem] text-[var(--color-ink)] placeholder-[var(--color-ink-muted)] focus:outline-none focus:border-[var(--color-ink)] transition-colors"
                 />
                 <datalist id="course-suggestions">
@@ -135,14 +136,14 @@ import { addDays, getTodayISO } from '../../lib/dates';
                 </datalist>
               </div>
               @if (taskForm.controls.course.touched && taskForm.controls.course.invalid) {
-                <p class="text-[0.8125rem] text-[var(--color-signal)] mt-1">La materia es obligatoria.</p>
+                <p class="text-[0.8125rem] text-[var(--color-signal)] mt-1">{{ t().taskModal.courseError }}</p>
               }
             </div>
 
             <!-- Priority -->
             <div>
               <span class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)] mb-1.5">
-                Prioridad
+                {{ t().taskModal.priorityLabel }}
               </span>
               <div class="grid grid-cols-3 gap-1 p-1 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-[8px]">
                 <button
@@ -153,7 +154,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
                   [class.text-[var(--color-paper)]]="taskForm.controls.priority.value === 'low'"
                   [class.text-[var(--color-ink-muted)]]="taskForm.controls.priority.value !== 'low'"
                 >
-                  Baja
+                  {{ t().taskModal.priorityLow }}
                 </button>
                 <button
                   type="button"
@@ -163,7 +164,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
                   [class.text-[var(--color-paper)]]="taskForm.controls.priority.value === 'medium'"
                   [class.text-[var(--color-ink-muted)]]="taskForm.controls.priority.value !== 'medium'"
                 >
-                  Media
+                  {{ t().taskModal.priorityMedium }}
                 </button>
                 <button
                   type="button"
@@ -174,7 +175,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
                   [class.font-semibold]="taskForm.controls.priority.value === 'high'"
                   [class.text-[var(--color-ink-muted)]]="taskForm.controls.priority.value !== 'high'"
                 >
-                  Alta
+                  {{ t().taskModal.priorityHigh }}
                 </button>
               </div>
             </div>
@@ -185,7 +186,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
             <!-- Due Date (2 cols) -->
             <div class="sm:col-span-2">
               <label class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)] mb-1.5" for="dueDate">
-                Fecha de Entrega <span class="text-[var(--color-signal)]">*</span>
+                {{ t().taskModal.dueDateLabel }} <span class="text-[var(--color-signal)]">*</span>
               </label>
               <input
                 id="dueDate"
@@ -200,28 +201,28 @@ import { addDays, getTodayISO } from '../../lib/dates';
                   (click)="setShortcutDate(0)"
                   class="text-[0.75rem] font-medium px-2 py-0.5 rounded-[4px] bg-[var(--color-paper)] border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)] transition-colors cursor-pointer"
                 >
-                  Hoy
+                  {{ t().taskModal.shortcutToday }}
                 </button>
                 <button
                   type="button"
                   (click)="setShortcutDate(1)"
                   class="text-[0.75rem] font-medium px-2 py-0.5 rounded-[4px] bg-[var(--color-paper)] border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)] transition-colors cursor-pointer"
                 >
-                  Mañana
+                  {{ t().taskModal.shortcutTomorrow }}
                 </button>
                 <button
                   type="button"
                   (click)="setShortcutDate(3)"
                   class="text-[0.75rem] font-medium px-2 py-0.5 rounded-[4px] bg-[var(--color-paper)] border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)] transition-colors cursor-pointer"
                 >
-                  En 3 días
+                  {{ t().taskModal.shortcut3Days }}
                 </button>
                 <button
                   type="button"
                   (click)="setShortcutDate(7)"
                   class="text-[0.75rem] font-medium px-2 py-0.5 rounded-[4px] bg-[var(--color-paper)] border border-[var(--color-line)] text-[var(--color-ink)] hover:border-[var(--color-ink)] transition-colors cursor-pointer"
                 >
-                  En 1 semana
+                  {{ t().taskModal.shortcut1Week }}
                 </button>
               </div>
             </div>
@@ -229,7 +230,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
             <!-- Time (1 col) -->
             <div>
               <label class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)] mb-1.5" for="time">
-                Hora (Opcional)
+                {{ t().taskModal.timeLabel }}
               </label>
               <input
                 id="time"
@@ -244,7 +245,7 @@ import { addDays, getTodayISO } from '../../lib/dates';
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)] mb-1.5" for="estimatedHours">
-                Horas Estimadas
+                {{ t().taskModal.hoursLabel }}
               </label>
               <input
                 id="estimatedHours"
@@ -253,20 +254,20 @@ import { addDays, getTodayISO } from '../../lib/dates';
                 step="0.5"
                 max="100"
                 formControlName="estimatedHours"
-                placeholder="Ej: 4"
+                placeholder="4"
                 class="w-full px-3.5 py-2.5 rounded-[8px] border border-[var(--color-line)] bg-[var(--color-paper)] text-[0.9375rem] text-[var(--color-ink)] placeholder-[var(--color-ink-muted)] focus:outline-none focus:border-[var(--color-ink)] transition-colors"
               />
             </div>
 
             <div class="sm:col-span-2">
               <label class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)] mb-1.5" for="notes">
-                Apuntes o Temario
+                {{ t().taskModal.notesLabel }}
               </label>
               <textarea
                 id="notes"
                 rows="2"
                 formControlName="notes"
-                placeholder="Ej: Capítulos 4 y 5. Llevar formulario impreso."
+                [placeholder]="t().taskModal.notesPlaceholder"
                 class="w-full px-3.5 py-2 rounded-[8px] border border-[var(--color-line)] bg-[var(--color-paper)] text-[0.9375rem] text-[var(--color-ink)] placeholder-[var(--color-ink-muted)] focus:outline-none focus:border-[var(--color-ink)] transition-colors resize-none"
               ></textarea>
             </div>
@@ -279,14 +280,14 @@ import { addDays, getTodayISO } from '../../lib/dates';
               (click)="closeModal.emit()"
               class="px-4 py-2 text-[0.875rem] font-medium text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] rounded-[8px] transition-colors cursor-pointer"
             >
-              Cancelar
+              {{ t().common.cancel }}
             </button>
             <button
               type="submit"
               [disabled]="taskForm.invalid || isSubmitting()"
               class="h-[44px] px-5 rounded-[8px] bg-[var(--color-ink)] text-[var(--color-paper)] font-medium text-[0.875rem] transition-opacity hover:opacity-85 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
             >
-              {{ isEditMode() ? 'Guardar Cambios' : 'Crear Tarea' }}
+              {{ isEditMode() ? t().taskModal.saveChanges : t().taskModal.createTask }}
             </button>
           </div>
         </form>
@@ -296,7 +297,9 @@ import { addDays, getTodayISO } from '../../lib/dates';
 })
 export class TaskModal implements OnInit {
   private taskService = inject(TaskService);
+  private i18n = inject(I18nService);
 
+  readonly t = this.i18n.t;
   readonly taskToEdit = input<Task | null>(null);
   readonly initialDate = input<string | null>(null);
 

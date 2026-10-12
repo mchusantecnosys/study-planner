@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TaskService } from '../../core/services/task.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { formatDisplayDate } from '../../lib/dates';
 
 @Component({
@@ -11,14 +12,14 @@ import { formatDisplayDate } from '../../lib/dates';
       @if (nextExam(); as examInfo) {
         <section class="border-b border-[var(--color-line)] pb-7">
           <span class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)] mb-2">
-            Próximo Examen
+            {{ t().sidebar.nextExam }}
           </span>
           <div class="flex items-baseline gap-3 my-1">
             <span class="font-display text-[4rem] font-bold leading-none tracking-[-0.03em] text-[var(--color-ink)] tabular-nums">
               {{ examInfo.daysLeft }}
             </span>
             <span class="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-signal)]">
-              {{ examInfo.daysLeft === 1 ? 'DÍA' : 'DÍAS' }}
+              {{ examInfo.daysLeft === 1 ? t().sidebar.daySingular : t().sidebar.dayPlural }}
             </span>
           </div>
           <h3 class="font-display text-[1.125rem] font-bold leading-[1.3] text-[var(--color-ink)] mt-2">
@@ -41,10 +42,10 @@ import { formatDisplayDate } from '../../lib/dates';
       <section class="border-b border-[var(--color-line)] pb-7">
         <div class="flex items-center justify-between mb-4">
           <span class="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
-            Carga Semanal
+            {{ t().sidebar.weeklyWorkload }}
           </span>
           <span class="text-[0.8125rem] text-[var(--color-ink-muted)] tabular-nums">
-            {{ totalWeekTasks() }} tareas
+            {{ totalWeekTasks() }} {{ t().sidebar.tasksCount }}
           </span>
         </div>
 
@@ -78,7 +79,7 @@ import { formatDisplayDate } from '../../lib/dates';
       <section>
         <div class="flex items-center justify-between mb-3">
           <span class="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
-            Materias
+            {{ t().sidebar.subjects }}
           </span>
           @if (filter().course !== 'all') {
             <button
@@ -86,7 +87,7 @@ import { formatDisplayDate } from '../../lib/dates';
               (click)="clearCourseFilter()"
               class="text-[0.75rem] text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] underline cursor-pointer"
             >
-              Ver todas
+              {{ t().sidebar.viewAll }}
             </button>
           }
         </div>
@@ -114,7 +115,7 @@ import { formatDisplayDate } from '../../lib/dates';
 
               @if (filter().course.toLowerCase() === course.toLowerCase()) {
                 <span class="text-[0.75rem] text-[var(--color-paper)] font-semibold uppercase tracking-wider shrink-0 pl-2">
-                  Filtrando
+                  {{ t().sidebar.filtering }}
                 </span>
               } @else {
                 <span class="text-[0.75rem] text-[var(--color-ink-muted)] tabular-nums shrink-0 pl-2">
@@ -130,7 +131,9 @@ import { formatDisplayDate } from '../../lib/dates';
 })
 export class EditorialSidebar {
   private taskService = inject(TaskService);
+  private i18n = inject(I18nService);
 
+  readonly t = this.i18n.t;
   readonly nextExam = this.taskService.nextExam;
   readonly weeklyDistribution = this.taskService.weeklyDistribution;
   readonly courses = this.taskService.uniqueCourses;
@@ -165,11 +168,15 @@ export class EditorialSidebar {
 
   getDayInitial(dayOfWeek: number): string {
     // 0 Sun, 1 Mon ... 6 Sat
+    if (this.i18n.currentLang() === 'en') {
+      const initials = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+      return initials[dayOfWeek] || 'M';
+    }
     const initials = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
     return initials[dayOfWeek] || 'L';
   }
 
   formatExamDate(isoDate: string): string {
-    return formatDisplayDate(isoDate, { shortMonth: true });
+    return formatDisplayDate(isoDate, { shortMonth: true }, this.i18n.currentLang());
   }
 }

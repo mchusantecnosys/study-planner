@@ -5,11 +5,17 @@
 :root {
   --color-paper: #f6f1e7;
   --color-surface: #fffdf8;
+  --color-card: #fffdf8;
   --color-ink: #1c1a17;
   --color-ink-muted: #5b564c;
+  --color-muted: #5b564c;
   --color-line: #ddd5c4;
+  --color-border: #ddd5c4;
+  --color-border-strong: #c8beab;
   --color-signal: #b9321a;
   --color-signal-wash: #f7e1da;
+  --color-accent-subtle: #f7e1da;
+  --color-paper-warm: #eee7d8;
   --color-success: #2f6b4a;
 
   --course-blue: #2d5fa8;
@@ -26,11 +32,17 @@
   :root {
     --color-paper: #17150f;
     --color-surface: #201d15;
+    --color-card: #201d15;
     --color-ink: #f1ebdd;
     --color-ink-muted: #b4ad9c;
+    --color-muted: #b4ad9c;
     --color-line: #38341f;
+    --color-border: #38341f;
+    --color-border-strong: #4a452d;
     --color-signal: #ff7a5c;
     --color-signal-wash: #3a1f18;
+    --color-accent-subtle: #3a1f18;
+    --color-paper-warm: #262219;
     --color-success: #6fcf9a;
 
     --course-blue: #7fb0f2;

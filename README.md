@@ -2,6 +2,8 @@
 
 > *"The afternoon notebook"*: a serene warm paper-and-ink workspace to organize your academic exams and assignments, built with a **Local-First** architecture, 0 ms latency, and automatic cloud backup.
 
+![Texto alternativo](/study-planner.png)
+
 ---
 
 ## 🎯 Project Objective

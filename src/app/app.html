@@ -9,15 +9,60 @@
             StudyPlanner
           </span>
           <span class="text-[0.8125rem] text-[var(--color-ink-muted)] hidden sm:inline">
-            El cuaderno de la tarde
+            {{ t().common.tagline }}
           </span>
         </div>
 
         <!-- Quiet Actions on Top Right -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Language Switcher [ ES | EN ] -->
+          <div
+            data-tour="lang"
+            class="flex items-center p-0.5 rounded-[6px] border border-[var(--color-line)] bg-[var(--color-paper)] text-[0.75rem] font-semibold tracking-wider shrink-0"
+            role="group"
+            [attr.aria-label]="t().header.languageAria"
+          >
+            <button
+              type="button"
+              (click)="setLanguage('es')"
+              class="px-2 py-1 rounded-[4px] transition-colors cursor-pointer"
+              [class.bg-[var(--color-ink)]]="currentLang() === 'es'"
+              [class.text-[var(--color-paper)]]="currentLang() === 'es'"
+              [class.text-[var(--color-ink-muted)]]="currentLang() !== 'es'"
+              [attr.aria-pressed]="currentLang() === 'es'"
+              aria-label="Español"
+            >
+              ES
+            </button>
+            <button
+              type="button"
+              (click)="setLanguage('en')"
+              class="px-2 py-1 rounded-[4px] transition-colors cursor-pointer"
+              [class.bg-[var(--color-ink)]]="currentLang() === 'en'"
+              [class.text-[var(--color-paper)]]="currentLang() === 'en'"
+              [class.text-[var(--color-ink-muted)]]="currentLang() !== 'en'"
+              [attr.aria-pressed]="currentLang() === 'en'"
+              aria-label="English"
+            >
+              EN
+            </button>
+          </div>
+
           @if (currentUser(); as user) {
+            <!-- Tutorial / Tour Guide Button (Only visible inside personal workspace) -->
+            <button
+              type="button"
+              (click)="startTour()"
+              class="flex items-center gap-1.5 px-2.5 py-1 text-[0.8125rem] font-medium text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-surface)] rounded-[6px] border border-[var(--color-line)] transition-colors cursor-pointer shrink-0"
+              [title]="t().tour.guideTooltip"
+              [attr.aria-label]="t().tour.guideTooltip"
+            >
+              <mat-icon class="!w-4 !h-4 !text-[16px] text-[var(--color-signal)]">school</mat-icon>
+              <span class="hidden sm:inline">{{ t().tour.guideBtn }}</span>
+            </button>
+
             <!-- Local-First & Cloud Sync Indicator -->
-            <div class="hidden sm:flex items-center gap-1.5 text-[0.75rem] text-[var(--color-ink-muted)]">
+            <div data-tour="sync" class="hidden sm:flex items-center gap-1.5 text-[0.75rem] text-[var(--color-ink-muted)]">
               <span
                 class="w-2 h-2 rounded-full transition-colors"
                 [class.bg-[var(--color-success)]]="syncState() === 'synced'"
@@ -26,7 +71,7 @@
                 aria-hidden="true"
               ></span>
               <span>
-                {{ syncState() === 'synced' ? 'Local-First + Nube activa' : syncState() === 'syncing' ? 'Sincronizando' : 'Dexie local (sin conexión)' }}
+                {{ syncState() === 'synced' ? t().header.syncActive : syncState() === 'syncing' ? t().header.syncing : t().header.syncOffline }}
               </span>
             </div>
 
@@ -47,34 +92,34 @@
               type="button"
               (click)="triggerBackup()"
               class="text-[0.8125rem] font-medium text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] underline cursor-pointer hidden lg:inline"
-              title="Forzar respaldo en Cloud Firestore"
+              [title]="t().header.backupTooltip"
             >
-              Respaldar
+              {{ t().header.backupBtn }}
             </button>
 
             <button
               type="button"
               (click)="exportCalendar()"
               class="text-[0.8125rem] font-medium text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] underline cursor-pointer hidden sm:inline"
-              title="Exportar a Google o Apple Calendar"
+              [title]="t().header.exportTooltip"
             >
-              Exportar .ICS
+              {{ t().header.exportBtn }}
             </button>
 
             <button
               type="button"
               (click)="openNewTaskModal()"
-              class="h-[38px] px-3.5 rounded-[8px] bg-[var(--color-ink)] text-[var(--color-paper)] text-[0.8125rem] font-medium transition-opacity hover:opacity-85 cursor-pointer"
+              class="h-[38px] px-3.5 rounded-[8px] bg-[var(--color-ink)] text-[var(--color-paper)] text-[0.8125rem] font-medium transition-opacity hover:opacity-85 cursor-pointer shrink-0"
             >
-              + Nueva actividad
+              {{ t().header.newActivity }}
             </button>
 
             <button
               type="button"
               (click)="signOutAccount()"
               class="p-2 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] rounded-[6px] transition-colors cursor-pointer"
-              title="Cerrar sesión"
-              aria-label="Cerrar sesión"
+              [title]="t().header.signOut"
+              [attr.aria-label]="t().header.signOut"
             >
               <mat-icon class="!w-5 !h-5 !text-[20px]">logout</mat-icon>
             </button>
@@ -82,9 +127,9 @@
             <button
               type="button"
               (click)="signInGoogle()"
-              class="h-[38px] px-4 rounded-[8px] bg-[var(--color-ink)] text-[var(--color-paper)] text-[0.8125rem] font-medium transition-opacity hover:opacity-85 cursor-pointer"
+              class="h-[38px] px-4 rounded-[8px] bg-[var(--color-ink)] text-[var(--color-paper)] text-[0.8125rem] font-medium transition-opacity hover:opacity-85 cursor-pointer shrink-0"
             >
-              Entrar con Google
+              {{ t().header.signInGoogle }}
             </button>
           }
         </div>
@@ -95,7 +140,7 @@
   <!-- Main View Router: Loading vs Gate vs Workspace -->
   @if (isAuthLoading()) {
     <div class="flex-1 flex items-center justify-center py-24 text-[var(--color-ink-muted)] text-[0.875rem]">
-      <span class="animate-pulse">Abriendo tu cuaderno...</span>
+      <span class="animate-pulse">{{ t().common.loading }}</span>
     </div>
   } @else if (!currentUser()) {
     <!-- Auth Gate Screen (Login / Register required to access personal notebook) -->
@@ -108,21 +153,22 @@
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[var(--color-line)]">
           <div>
             <span class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-signal)] mb-1">
-              Jornada de Estudio
+              {{ t().mainLead.kicker }}
             </span>
             <!-- Display typography: Fraunces clamp(2rem, 4.5vw, 3.25rem) 700 -->
             <h1 class="font-display text-[clamp(2rem,4.5vw,3.25rem)] font-bold leading-[1.05] tracking-[-0.025em] text-[var(--color-ink)] capitalize">
               {{ todayFormatted() }}
             </h1>
             <p class="text-[1rem] text-[var(--color-ink-muted)] mt-2 max-w-[46ch] leading-[1.5]">
-              Un espacio de calma para responder a una sola pregunta: ¿qué preparo ahora?
+              {{ t().mainLead.question }}
             </p>
           </div>
 
           <!-- View Toggle Control (Exactly 3 options: Lista, Semana, Mes) -->
           <nav
+            data-tour="views"
             class="flex items-center p-1 bg-[var(--color-paper)] border border-[var(--color-line)] rounded-[8px] self-start md:self-end shrink-0 w-full sm:w-auto"
-            aria-label="Vistas del planificador"
+            [attr.aria-label]="t().mainLead.viewsAria"
           >
             <button
               type="button"
@@ -133,7 +179,7 @@
               [class.text-[var(--color-ink-muted)]]="currentView() !== 'list'"
               [attr.aria-pressed]="currentView() === 'list'"
             >
-              Lista
+              {{ t().mainLead.viewList }}
             </button>
             <button
               type="button"
@@ -144,7 +190,7 @@
               [class.text-[var(--color-ink-muted)]]="currentView() !== 'week'"
               [attr.aria-pressed]="currentView() === 'week'"
             >
-              Semana
+              {{ t().mainLead.viewWeek }}
             </button>
             <button
               type="button"
@@ -155,7 +201,7 @@
               [class.text-[var(--color-ink-muted)]]="currentView() !== 'month'"
               [attr.aria-pressed]="currentView() === 'month'"
             >
-              Mes
+              {{ t().mainLead.viewMonth }}
             </button>
           </nav>
         </div>
@@ -195,7 +241,7 @@
         </section>
 
         <!-- Right Column: Sticky Sidebar on Desktop (hidden on mobile, per DESIGN.md) -->
-        <div class="hidden lg:block">
+        <div data-tour="sidebar" class="hidden lg:block">
           <app-editorial-sidebar></app-editorial-sidebar>
         </div>
       </div>
@@ -216,9 +262,9 @@
       <div>
         <span class="font-medium text-[var(--color-ink)]">StudyPlanner</span>
         <span aria-hidden="true"> · </span>
-        <span>Local-First (Dexie IndexedDB)</span>
+        <span>{{ t().footer.localFirstDesc }}</span>
         <span aria-hidden="true"> · </span>
-        <span>Réplica en Cloud Firestore</span>
+        <span>{{ t().footer.cloudReplicaDesc }}</span>
       </div>
 
       <div class="flex items-center gap-4 flex-wrap">
@@ -228,14 +274,14 @@
             (click)="resetData()"
             class="hover:text-[var(--color-ink)] underline cursor-pointer"
           >
-            Restaurar ejemplos
+            {{ t().footer.restoreSample }}
           </button>
           <button
             type="button"
             (click)="signOutAccount()"
             class="hover:text-[var(--color-ink)] underline cursor-pointer"
           >
-            Cerrar sesión
+            {{ t().footer.signOut }}
           </button>
         }
       </div>
@@ -260,4 +306,10 @@
       {{ msg }}
     </div>
   }
+
+  <!-- Interactive Guided User Tour Overlay (Only when logged into notebook) -->
+  @if (currentUser()) {
+    <app-user-tour></app-user-tour>
+  }
 </div>
+

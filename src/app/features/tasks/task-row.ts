@@ -8,6 +8,7 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { Task } from '../../core/models/task.model';
 import { TaskService } from '../../core/services/task.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { formatDisplayDate, getRelativeDateLabel, isDatePast } from '../../lib/dates';
 
 @Component({
@@ -25,7 +26,7 @@ import { formatDisplayDate, getRelativeDateLabel, isDatePast } from '../../lib/d
           type="button"
           (click)="onToggle($event)"
           class="w-11 h-11 flex items-center justify-center cursor-pointer -ml-2 rounded-[6px]"
-          [attr.aria-label]="task().completed ? 'Marcar como pendiente' : 'Marcar como completada'"
+          [attr.aria-label]="task().completed ? t().taskRow.markPending : t().taskRow.markComplete"
         >
           <span
             class="w-5 h-5 rounded-[6px] border flex items-center justify-center transition-colors"
@@ -50,7 +51,7 @@ import { formatDisplayDate, getRelativeDateLabel, isDatePast } from '../../lib/d
             <span
               class="px-[7px] py-[2px] rounded-[4px] bg-[var(--color-signal-wash)] text-[var(--color-signal)] text-[0.6875rem] font-semibold uppercase tracking-[0.04em] shrink-0 font-body"
             >
-              Examen
+              {{ t().taskRow.examBadge }}
             </span>
           }
 
@@ -118,7 +119,8 @@ import { formatDisplayDate, getRelativeDateLabel, isDatePast } from '../../lib/d
             type="button"
             (click)="onEdit($event)"
             class="p-1.5 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] rounded-[6px] cursor-pointer"
-            title="Editar tarea"
+            [title]="t().taskRow.editTooltip"
+            [attr.aria-label]="t().taskRow.editTooltip"
           >
             <mat-icon class="!w-4 !h-4 !text-[16px]">edit</mat-icon>
           </button>
@@ -126,7 +128,8 @@ import { formatDisplayDate, getRelativeDateLabel, isDatePast } from '../../lib/d
             type="button"
             (click)="onDelete($event)"
             class="p-1.5 text-[var(--color-ink-muted)] hover:text-[var(--color-signal)] rounded-[6px] cursor-pointer"
-            title="Eliminar tarea"
+            [title]="t().taskRow.deleteTooltip"
+            [attr.aria-label]="t().taskRow.deleteTooltip"
           >
             <mat-icon class="!w-4 !h-4 !text-[16px]">delete</mat-icon>
           </button>
@@ -137,7 +140,9 @@ import { formatDisplayDate, getRelativeDateLabel, isDatePast } from '../../lib/d
 })
 export class TaskRow {
   private taskService = inject(TaskService);
+  private i18n = inject(I18nService);
 
+  readonly t = this.i18n.t;
   readonly task = input.required<Task>();
   readonly edit = output<Task>();
 
@@ -151,14 +156,20 @@ export class TaskRow {
   }
 
   overdueLabel(): string {
-    const label = getRelativeDateLabel(this.task().dueDate);
-    if (label === 'Ayer') return 'Venció ayer';
-    if (label.startsWith('Atrasado')) return label;
-    return `Venció (${formatDisplayDate(this.task().dueDate, { shortMonth: true })})`;
+    const lang = this.i18n.currentLang();
+    const label = getRelativeDateLabel(this.task().dueDate, lang);
+    if (label === 'Ayer' || label === 'Yesterday') {
+      return this.t().taskRow.overdueYesterday;
+    }
+    if (label.startsWith('Atrasado') || label.startsWith('Overdue')) {
+      return label;
+    }
+    const formatted = formatDisplayDate(this.task().dueDate, { shortMonth: true }, lang);
+    return `${this.t().taskRow.overduePrefix} (${formatted})`;
   }
 
   dateLabel(): string {
-    return getRelativeDateLabel(this.task().dueDate);
+    return getRelativeDateLabel(this.task().dueDate, this.i18n.currentLang());
   }
 
   onToggle(event: MouseEvent): void {
@@ -173,7 +184,7 @@ export class TaskRow {
 
   onDelete(event: MouseEvent): void {
     event.stopPropagation();
-    if (confirm('¿Eliminar esta tarea?')) {
+    if (confirm(this.t().taskRow.confirmDelete)) {
       this.taskService.deleteTask(this.task().id);
     }
   }

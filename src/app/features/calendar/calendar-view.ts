@@ -10,12 +10,14 @@ import { SlicePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Task } from '../../core/models/task.model';
 import { TaskService } from '../../core/services/task.service';
+import { I18nService } from '../../core/services/i18n.service';
 import {
   CalendarGridCell,
   addDays,
   buildMonthGrid,
   buildWeekDays,
   formatDisplayDate,
+  getAcademicWeekdays,
   getMonthName,
   getTodayISO,
   parseDateParts,
@@ -42,7 +44,7 @@ import { TaskRow } from '../tasks/task-row';
                 type="button"
                 (click)="navigateMonth(-1)"
                 class="p-2 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-surface)] rounded-[8px] transition-colors cursor-pointer"
-                aria-label="Mes anterior"
+                [attr.aria-label]="t().calendar.prevMonthAria"
               >
                 <mat-icon class="!w-5 !h-5 !text-[20px]">chevron_left</mat-icon>
               </button>
@@ -51,13 +53,13 @@ import { TaskRow } from '../tasks/task-row';
                 (click)="goToToday()"
                 class="px-3 py-1.5 text-[0.8125rem] font-semibold text-[var(--color-ink)] hover:bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[8px] transition-colors cursor-pointer"
               >
-                Hoy
+                {{ t().calendar.todayBtn }}
               </button>
               <button
                 type="button"
                 (click)="navigateMonth(1)"
                 class="p-2 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-surface)] rounded-[8px] transition-colors cursor-pointer"
-                aria-label="Mes siguiente"
+                [attr.aria-label]="t().calendar.nextMonthAria"
               >
                 <mat-icon class="!w-5 !h-5 !text-[20px]">chevron_right</mat-icon>
               </button>
@@ -66,13 +68,11 @@ import { TaskRow } from '../tasks/task-row';
 
           <!-- Weekday Labels -->
           <div class="grid grid-cols-7 text-center pb-2">
-            <span class="text-[0.75rem] font-semibold text-[var(--color-ink-muted)] uppercase tracking-[0.06em]">Lun</span>
-            <span class="text-[0.75rem] font-semibold text-[var(--color-ink-muted)] uppercase tracking-[0.06em]">Mar</span>
-            <span class="text-[0.75rem] font-semibold text-[var(--color-ink-muted)] uppercase tracking-[0.06em]">Mié</span>
-            <span class="text-[0.75rem] font-semibold text-[var(--color-ink-muted)] uppercase tracking-[0.06em]">Jue</span>
-            <span class="text-[0.75rem] font-semibold text-[var(--color-ink-muted)] uppercase tracking-[0.06em]">Vie</span>
-            <span class="text-[0.75rem] font-semibold text-[var(--color-ink-muted)] uppercase tracking-[0.06em]">Sáb</span>
-            <span class="text-[0.75rem] font-semibold text-[var(--color-ink-muted)] uppercase tracking-[0.06em]">Dom</span>
+            @for (w of weekdays(); track w.short) {
+              <span class="text-[0.75rem] font-semibold text-[var(--color-ink-muted)] uppercase tracking-[0.06em]">
+                {{ w.short }}
+              </span>
+            }
           </div>
 
           <!-- 7-Column Month Grid (52px cells, rounded-md) -->
@@ -129,7 +129,7 @@ import { TaskRow } from '../tasks/task-row';
             <div class="flex items-center justify-between mb-3">
               <div>
                 <span class="block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-ink-muted)]">
-                  Jornada Elegida
+                  {{ t().calendar.selectedDayTitle }}
                 </span>
                 <h3 class="font-display text-[1.25rem] font-bold text-[var(--color-ink)] capitalize mt-0.5">
                   {{ formatSelectedDateLabel() }}
@@ -141,7 +141,7 @@ import { TaskRow } from '../tasks/task-row';
                 (click)="addTask.emit(selectedDate())"
                 class="px-3.5 py-1.5 bg-[var(--color-ink)] text-[var(--color-paper)] text-[0.8125rem] font-medium rounded-[8px] hover:opacity-85 transition-opacity cursor-pointer"
               >
-                + Añadir para este día
+                {{ t().calendar.addForThisDay }}
               </button>
             </div>
 
@@ -151,7 +151,7 @@ import { TaskRow } from '../tasks/task-row';
                 <app-task-row [task]="task" (edit)="editTask.emit($event)"></app-task-row>
               } @empty {
                 <div class="py-6 text-[0.875rem] text-[var(--color-ink-muted)]">
-                  No hay entregas registradas para este día.
+                  {{ t().calendar.emptyDayTasks }}
                 </div>
               }
             </div>
@@ -165,7 +165,7 @@ import { TaskRow } from '../tasks/task-row';
           <!-- Week Navigation Header -->
           <div class="flex items-center justify-between pb-4 border-b border-[var(--color-line)]">
             <h2 class="font-display text-[1.25rem] font-bold text-[var(--color-ink)]">
-              Semana del {{ formatWeekStartLabel() }}
+              {{ t().calendar.weekOf }} {{ formatWeekStartLabel() }}
             </h2>
 
             <div class="flex items-center gap-1.5">
@@ -173,7 +173,7 @@ import { TaskRow } from '../tasks/task-row';
                 type="button"
                 (click)="navigateWeek(-1)"
                 class="p-2 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-surface)] rounded-[8px] transition-colors cursor-pointer"
-                aria-label="Semana anterior"
+                [attr.aria-label]="t().calendar.prevWeekAria"
               >
                 <mat-icon class="!w-5 !h-5 !text-[20px]">chevron_left</mat-icon>
               </button>
@@ -182,13 +182,13 @@ import { TaskRow } from '../tasks/task-row';
                 (click)="goToToday()"
                 class="px-3 py-1.5 text-[0.8125rem] font-semibold text-[var(--color-ink)] hover:bg-[var(--color-surface)] border border-[var(--color-line)] rounded-[8px] transition-colors cursor-pointer"
               >
-                Hoy
+                {{ t().calendar.todayBtn }}
               </button>
               <button
                 type="button"
                 (click)="navigateWeek(1)"
                 class="p-2 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-surface)] rounded-[8px] transition-colors cursor-pointer"
-                aria-label="Semana siguiente"
+                [attr.aria-label]="t().calendar.nextWeekAria"
               >
                 <mat-icon class="!w-5 !h-5 !text-[20px]">chevron_right</mat-icon>
               </button>
@@ -211,7 +211,7 @@ import { TaskRow } from '../tasks/task-row';
                     </span>
                     @if (day.isToday) {
                       <span class="text-[0.6875rem] font-bold uppercase tracking-wider text-[var(--color-signal)]">
-                        · Hoy
+                        · {{ t().common.today }}
                       </span>
                     }
                   </div>
@@ -221,7 +221,7 @@ import { TaskRow } from '../tasks/task-row';
                     (click)="addTask.emit(day.dateStr)"
                     class="text-[0.75rem] text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] underline cursor-pointer"
                   >
-                    + Añadir
+                    {{ t().calendar.addBtn }}
                   </button>
                 </div>
 
@@ -231,7 +231,7 @@ import { TaskRow } from '../tasks/task-row';
                     <app-task-row [task]="task" (edit)="editTask.emit($event)"></app-task-row>
                   } @empty {
                     <div class="py-3 text-[0.8125rem] text-[var(--color-ink-muted)]">
-                      Sin entregas programadas
+                      {{ t().calendar.emptyWeekDayTasks }}
                     </div>
                   }
                 </div>
@@ -245,7 +245,9 @@ import { TaskRow } from '../tasks/task-row';
 })
 export class CalendarView {
   private taskService = inject(TaskService);
+  private i18n = inject(I18nService);
 
+  readonly t = this.i18n.t;
   readonly addTask = output<string>();
   readonly editTask = output<Task>();
 
@@ -254,6 +256,10 @@ export class CalendarView {
 
   readonly viewYear = signal<number>(parseDateParts(getTodayISO()).year);
   readonly viewMonth = signal<number>(parseDateParts(getTodayISO()).month);
+
+  readonly weekdays = computed(() => {
+    return getAcademicWeekdays(this.i18n.currentLang());
+  });
 
   readonly monthGridCells = computed<CalendarGridCell[]>(() => {
     return buildMonthGrid(this.viewYear(), this.viewMonth());
@@ -269,17 +275,17 @@ export class CalendarView {
   });
 
   currentMonthLabel(): string {
-    return `${getMonthName(this.viewMonth())} ${this.viewYear()}`;
+    return `${getMonthName(this.viewMonth(), this.i18n.currentLang())} ${this.viewYear()}`;
   }
 
   formatWeekStartLabel(): string {
     const days = this.weekDays();
     if (days.length === 0) return '';
-    return formatDisplayDate(days[0].dateStr, { shortMonth: true });
+    return formatDisplayDate(days[0].dateStr, { shortMonth: true }, this.i18n.currentLang());
   }
 
   formatSelectedDateLabel(): string {
-    return formatDisplayDate(this.selectedDate(), { includeDayName: true });
+    return formatDisplayDate(this.selectedDate(), { includeDayName: true }, this.i18n.currentLang());
   }
 
   getTasksForDate(dateStr: string): Task[] {
@@ -297,12 +303,13 @@ export class CalendarView {
   }
 
   getAccessibleCellLabel(cell: CalendarGridCell): string {
+    const lang = this.i18n.currentLang();
     const pending = this.getTasksForDate(cell.dateStr).filter((t) => !t.completed).length;
-    return `${formatDisplayDate(cell.dateStr, { shortMonth: true })}, ${pending} pendientes`;
+    return `${formatDisplayDate(cell.dateStr, { shortMonth: true }, lang)}, ${pending} ${this.t().calendar.pendingCount}`;
   }
 
   getWeekDayLabel(day: CalendarGridCell): string {
-    return formatDisplayDate(day.dateStr, { includeDayName: true });
+    return formatDisplayDate(day.dateStr, { includeDayName: true }, this.i18n.currentLang());
   }
 
   selectDate(dateStr: string): void {
@@ -336,3 +343,4 @@ export class CalendarView {
     this.selectDate(newDate);
   }
 }
+

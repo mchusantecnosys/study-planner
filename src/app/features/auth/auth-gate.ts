@@ -6,6 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { FirebaseService } from '../../core/services/firebase.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 @Component({
   selector: 'app-auth-gate',
@@ -15,16 +16,16 @@ import { FirebaseService } from '../../core/services/firebase.service';
       <div class="w-full max-w-xl text-center space-y-8">
         <!-- Badge kicker -->
         <span class="inline-block text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-signal)]">
-          El cuaderno de la tarde
+          {{ t().authGate.kicker }}
         </span>
 
         <!-- Display Headline in Fraunces -->
         <div class="space-y-3">
           <h1 class="font-display text-[clamp(2.25rem,5vw,3.5rem)] font-bold leading-[1.05] tracking-[-0.025em] text-[var(--color-ink)] text-balance">
-            Tu cuaderno de estudio personal
+            {{ t().authGate.title }}
           </h1>
           <p class="text-[1.0625rem] text-[var(--color-ink-muted)] max-w-[46ch] mx-auto leading-[1.5]">
-            Un espacio sereno para gestionar deberes y exámenes sin urgencias ficticias. Arquitectura local-first con réplica en la nube.
+            {{ t().authGate.description }}
           </p>
         </div>
 
@@ -32,26 +33,26 @@ import { FirebaseService } from '../../core/services/firebase.service';
         <div class="border-y border-[var(--color-line)] py-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
           <div>
             <span class="block text-[0.8125rem] font-semibold text-[var(--color-ink)] mb-1">
-              0 ms de Latencia
+              {{ t().authGate.highlight1Title }}
             </span>
             <p class="text-[0.8125rem] text-[var(--color-ink-muted)] leading-relaxed">
-              Lectura y escritura instantánea en tu navegador con IndexedDB.
+              {{ t().authGate.highlight1Desc }}
             </p>
           </div>
           <div>
             <span class="block text-[0.8125rem] font-semibold text-[var(--color-ink)] mb-1">
-              Sin Esperas de Red
+              {{ t().authGate.highlight2Title }}
             </span>
             <p class="text-[0.8125rem] text-[var(--color-ink-muted)] leading-relaxed">
-              Funciona sin internet. Sincroniza en segundo plano cuando te conectas.
+              {{ t().authGate.highlight2Desc }}
             </p>
           </div>
           <div>
             <span class="block text-[0.8125rem] font-semibold text-[var(--color-ink)] mb-1">
-              Aislamiento Seguro
+              {{ t().authGate.highlight3Title }}
             </span>
             <p class="text-[0.8125rem] text-[var(--color-ink-muted)] leading-relaxed">
-              Tus tareas pertenecen únicamente a tu cuenta de Google en Firestore.
+              {{ t().authGate.highlight3Desc }}
             </p>
           </div>
         </div>
@@ -83,10 +84,10 @@ import { FirebaseService } from '../../core/services/firebase.service';
                 d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 17c1.8 3.7 5.6 6.5 10.1 6.5z"
               />
             </svg>
-            <span>{{ isLoggingIn() ? 'Conectando...' : 'Entrar con Google' }}</span>
+            <span>{{ isLoggingIn() ? t().authGate.connecting : t().authGate.loginWithGoogle }}</span>
           </button>
           <p class="text-[0.75rem] text-[var(--color-ink-muted)]">
-            Acceso seguro. No almacenamos contraseñas.
+            {{ t().authGate.privacyNote }}
           </p>
         </div>
       </div>
@@ -95,7 +96,9 @@ import { FirebaseService } from '../../core/services/firebase.service';
 })
 export class AuthGate {
   private firebaseService = inject(FirebaseService);
+  private i18n = inject(I18nService);
 
+  readonly t = this.i18n.t;
   readonly loginSuccess = output<void>();
   readonly isLoggingIn = signal<boolean>(false);
 
